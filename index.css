@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 50px;
+    line-height: 2;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+#score,
+#timer,
+#problem,
+#result {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+input {
+    padding: 15px;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    width: 50%;
+}
+
+button,
+select {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    cursor: pointer;
+    margin: 5px;
+    width: 250px;
+}
+
+select {
+    width: 515px;
+}
+
+#container {
+    margin-top: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+#records {
+    font-size: 1.5em;
+    margin-top: 20px;
+    text-align: left;
+    display: inline-block;
+}
+
+#session {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-weight: bold;
+}
+
+#info {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+}
+
+#session {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+#totalTimeContainer {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1.5em;
+    text-align: left;
+}
+
+#selected,
+#bestTime {
+    font-weight: bold;
+}
+
+#totalTime {
+    color: red;
+}
