@@ -8,11 +8,13 @@ let targetScore = 0;
 let isDifficult = false;
 let doublePointThreshold, pointThreshold, maxResponseTime;
 let repitiendo = false;
+let vidas = 3;
+let specials = null;
 function loadRecords() {
     document.querySelectorAll("button").forEach(button => {
         button.disabled = document.getElementById("tipoElegido").selectedIndex === 0;
     });
-    ['50', '100', /*'200',*/ '50_d', '100_d', /*'200_d'*/].forEach((key, i) => {
+    ['noob', 'pro', '50', '100', '50_d', '100_d'].forEach((key, i) => {
         const preKey = document.getElementById("tipoElegido").value;
         const record = localStorage.getItem(`${preKey}_${key}`);
         document.getElementById(`record${key}`).innerText = record ? `${record} s` : '--';
@@ -38,13 +40,31 @@ function selectOption(target, difficult) {
     doublePointThreshold = (difficult ? 2 : 3) + (document.getElementById("tipoElegido").selectedIndex - 1);
     pointThreshold = doublePointThreshold * 2;
     maxResponseTime = doublePointThreshold * 3;
-    document.getElementById("selected").innerHTML = `Seleccionado: ${target} puntos ${nivel}.`;
+    if (target === 10) {
+        specials = 'pro';
+        targetScore = 50;
+        document.getElementById("selected").innerHTML = `Seleccionado: PRO NIGHMARE HARDCORE.`;
+        document.getElementById("vidas").style.display = "block";
+        document.getElementById("vidas").innerHTML = `Vidas restantes: 3.`;
+    } else {
+        document.getElementById("selected").innerHTML = `Seleccionado: ${target} puntos ${nivel}.`;
+    }
     document.getElementById("infoDoble").innerHTML = `Punto doble: ${doublePointThreshold}s.`
     document.getElementById("infoNormal").innerHTML = `Punto normal: ${pointThreshold}s.`
     document.getElementById("infoMaxTime").innerHTML = `Tiempo máx: ${maxResponseTime}s.`
+
     document.getElementById("startOptions").style.display = "none";
     document.getElementById("records").style.display = "none";
     document.getElementById("container").style.display = "block";
+
+    if (target === 5) {
+        specials = 'noob';
+        targetScore = 50;
+        document.getElementById("selected").innerHTML = `Seleccionado: NOOB.`;
+        document.getElementById("infoDoble").style.display = "none";
+        document.getElementById("infoNormal").style.display = "none";
+        document.getElementById("infoMaxTime").style.display = "none";
+    }
     // Mostrar el mejor tiempo para la opción seleccionada
     const preKey = document.getElementById("tipoElegido").value;
     const key = `${target}${isDifficult ? '_d' : ''}`;
@@ -58,7 +78,7 @@ function selectOption(target, difficult) {
 function generateProblem() {
     intentos++;
     clearInterval(timerInterval);
-    document.getElementById("timer").innerText = `Tiempo: 0.0 s`;
+    if (specials != 'noob') document.getElementById("timer").innerText = `Tiempo: 0.0 s`;
     document.getElementById("problem").innerText = "";
     document.getElementById("result").innerText = "";
     document.getElementById("nextButton").style.display = "none";
@@ -86,12 +106,13 @@ function generateProblem() {
     }
     document.getElementById("answer").focus();
     startTimer();
+
 }
 function startTimer() {
     timer = 0.0;
     inicio = Date.now();
     repitiendo = false;
-    timerInterval = setInterval(() => {
+    if (specials != 'noob') timerInterval = setInterval(() => {
         timer = ((Date.now() - inicio) / 100) / 10.0;
         document.getElementById("timer").innerText = `Tiempo: ${timer.toFixed(1)} s`;
         if (timer >= maxResponseTime) {
@@ -144,14 +165,19 @@ function handleEnter(event) {
         if (userAnswer === correctAnswer) {
             resultElement.style.color = "green";
             if (!repitiendo) {
-                if (timer <= doublePointThreshold) {
-                    updateScore(2);
-                    resultElement.innerText = "¡Correcto! Has ganado 2 puntos.";
-                } else if (timer <= pointThreshold) {
+                if (specials === 'noob') {
                     updateScore(1);
                     resultElement.innerText = "¡Correcto! Has ganado 1 punto.";
                 } else {
-                    resultElement.innerText = "¡Correcto!";
+                    if (timer <= doublePointThreshold) {
+                        updateScore(2);
+                        resultElement.innerText = "¡Correcto! Has ganado 2 puntos.";
+                    } else if (timer <= pointThreshold) {
+                        updateScore(1);
+                        resultElement.innerText = "¡Correcto! Has ganado 1 punto.";
+                    } else {
+                        resultElement.innerText = "¡Correcto!";
+                    }
                 }
             } else {
                 resultElement.innerText = "¡Correcto!";
@@ -176,7 +202,8 @@ function handleEnter(event) {
             }
 
             resultElement.style.color = "red";
-            if (isDifficult || !repitiendo) updateScore(-1);
+            if ((isDifficult || !repitiendo) && specials != 'noob') updateScore(-1);
+            if (specials === 'pro') updateVidas(-1);
             repite();
         }
     }
@@ -200,4 +227,17 @@ function updateScore(points) {
     score += points;
     if (score < 0) score = 0;
     document.getElementById("score").innerText = `Puntuación: ${score}`;
+}
+
+function updateVidas(points) {
+    vidas += points;
+    document.getElementById("vidas").innerText = `Vidas restantes: ${vidas}`;
+    if (vidas < 1) {
+        document.getElementById("result").innerText = `La respuesta correcta era ${correctAnswer}.`;
+        document.getElementById("answer").disabled = true;
+        clearInterval(totalTimerInterval);
+        setTimeout (()=>{
+            alert(`Te has quedado sin vidas. Vas de PRO y no llegas a NOOB.`);
+        } , 1);
+    }
 }
