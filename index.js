@@ -10,17 +10,29 @@ let doublePointThreshold, pointThreshold, maxResponseTime;
 let repitiendo = false;
 let vidas = 3;
 let specials = null;
-function loadRecords() {
+
+function loadRecords(setBests) {
+
     document.querySelectorAll("button").forEach(button => {
         button.disabled = document.getElementById("tipoElegido").selectedIndex === 0;
     });
-    ['noob', 'pro', '50', '100', '50_d', '100_d'].forEach((key, i) => {
+
+    ['noob', 'pro', '50', '100', '50_d', '100_d'].forEach( (key, i) => {
         const preKey = document.getElementById("tipoElegido").value;
-        const record = localStorage.getItem(`${preKey}_${key}`);
-        document.getElementById(`record${key}`).innerText = record ? `${record} s` : '--';
+        if (setBests === 0 ) {
+            localStorage.removeItem(`${preKey}_${key}`);  
+        } else if (setBests === 1) {
+            localStorage.setItem(`${preKey}_${key}`, `${i+1}`); 
+        } else {
+            const bestTime = localStorage.getItem(`${preKey}_${key}`);
+            document.getElementById(`bestTime${key}`).innerText = bestTime ? `${bestTime} s` : '--';
+        }
     });
+
 }
-loadRecords();
+
+loadRecords(2);
+
 function generateSessionId() {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
@@ -31,6 +43,7 @@ function generateSessionId() {
 }
 const sessionId = generateSessionId();
 document.getElementById("session").innerText = `Sesión: ${sessionId}`;
+
 function selectOption(target, difficult) {
     const nivel = difficult
         ? "dificil"
@@ -40,8 +53,13 @@ function selectOption(target, difficult) {
     doublePointThreshold = (difficult ? 2 : 3) + (document.getElementById("tipoElegido").selectedIndex - 1);
     pointThreshold = doublePointThreshold * 2;
     maxResponseTime = doublePointThreshold * 3;
+
+    const preKey = document.getElementById("tipoElegido").value;
+    let key = `${target}${isDifficult ? '_d' : ''}`;
+
     if (target === 10) {
         specials = 'pro';
+        key = 'pro';
         targetScore = 50;
         document.getElementById("selected").innerHTML = `Seleccionado: PRO NIGHMARE HARDCORE.`;
         document.getElementById("vidas").style.display = "block";
@@ -59,15 +77,15 @@ function selectOption(target, difficult) {
 
     if (target === 5) {
         specials = 'noob';
+        key = 'noob';
         targetScore = 50;
         document.getElementById("selected").innerHTML = `Seleccionado: NOOB.`;
         document.getElementById("infoDoble").style.display = "none";
         document.getElementById("infoNormal").style.display = "none";
         document.getElementById("infoMaxTime").style.display = "none";
     }
+
     // Mostrar el mejor tiempo para la opción seleccionada
-    const preKey = document.getElementById("tipoElegido").value;
-    const key = `${target}${isDifficult ? '_d' : ''}`;
     const bestTime = parseFloat(localStorage.getItem(`${preKey}_${key}`)) || null;
     document.getElementById("bestTime").innerText = bestTime
         ? `Mejor tiempo: ${bestTime.toFixed(1)} s`
@@ -134,7 +152,9 @@ function stopTotalTimer() {
     document.getElementById("answer").disabled = true;
     clearInterval(totalTimerInterval);
     const preKey = document.getElementById("tipoElegido").value;
-    const key = `${targetScore}${isDifficult ? '_d' : ''}`;
+    const key = specials  
+                ? specials
+                : `${targetScore}${isDifficult ? '_d' : ''}`;
     const previousBest = parseFloat(localStorage.getItem(`${preKey}_${key}`)) || Infinity;
     document.getElementById("score").innerText = `Puntuación: ${score} puntos en ${intentos} intentos.`;
     if (totalTimer < previousBest) {
@@ -208,6 +228,7 @@ function handleEnter(event) {
         }
     }
 }
+
 function repite() {
     repitiendo = true;
     document.getElementById("answer").value = "";
@@ -217,6 +238,7 @@ function repite() {
         document.getElementById("answer").focus();
     }
 }
+
 function siguiente() {
     document.getElementById("answer").disabled = true;
     document.getElementById("nextButton").style.display = "inline-block";
@@ -236,8 +258,8 @@ function updateVidas(points) {
         document.getElementById("result").innerText = `La respuesta correcta era ${correctAnswer}.`;
         document.getElementById("answer").disabled = true;
         clearInterval(totalTimerInterval);
-        setTimeout (()=>{
+        setTimeout(() => {
             alert(`Te has quedado sin vidas. Vas de PRO y no llegas a NOOB.`);
-        } , 1);
+        }, 1);
     }
 }
